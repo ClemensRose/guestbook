@@ -170,4 +170,37 @@ class GuestbookController {
 
 		}).orElseGet(() -> ResponseEntity.notFound().build());
 	}
+	
+	//for editing
+	
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping(path = "/guestbook/{entry}")
+	String editEntry(@PathVariable Optional<GuestbookEntry> entry) {
+
+		return entry.map(it -> {
+			
+			guestbook.delete(it);
+			return "redirect:/guestbook";
+
+		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+	}
+
+	/**
+	 * Handles AJAX requests to delete {@link GuestbookEntry}s. Otherwise, this method is similar
+	 * to {@link #removeEntry(Optional)}.
+	 *
+	 * @param entry an {@link Optional} with the {@link GuestbookEntry} to delete
+	 * @return a response entity indicating success or failure of the removal
+	 */
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping(path = "/guestbook/{entry}", headers = IS_AJAX_HEADER)
+	HttpEntity<?> editEntryJS(@PathVariable Optional<GuestbookEntry> entry) {
+
+		return entry.map(it -> {
+
+			guestbook.delete(it);
+			return ResponseEntity.ok().build();
+
+		}).orElseGet(() -> ResponseEntity.notFound().build());
+	}
 }
